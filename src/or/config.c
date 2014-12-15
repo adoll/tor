@@ -170,8 +170,8 @@ static config_var_t option_vars_[] = {
   V(CellStatistics,              BOOL,     "0"),
   V(LearnCircuitBuildTimeout,    BOOL,     "1"),
   V(CircuitBuildTimeout,         INTERVAL, "0"),
-  V(CircuitUseRandomWalks,       BOOL,     "0"),
   V(CircuitIdleTimeout,          INTERVAL, "1 hour"),
+  V(CircuitUseRandomWalks,       BOOL,     "0"),
   V(CircuitStreamTimeout,        INTERVAL, "0"),
   V(CircuitPriorityHalflife,     DOUBLE,  "-100.0"), /*negative:'Use default'*/
   V(ClientDNSRejectInternalAddresses, BOOL,"1"),
@@ -4180,7 +4180,7 @@ options_init_from_torrc(int argc, char **argv)
       }
     }
   }
-
+  
   retval = options_init_from_string(cf_defaults, cf, command, command_arg,
                                     &errmsg);
 
