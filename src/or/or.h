@@ -3909,6 +3909,8 @@ typedef struct {
   /** If true, and the controller tells us to use a one-hop circuit, and the
    * exit allows it, we use it. */
   int AllowSingleHopCircuits;
+   /** If true, build circuits using random walks. */
+  int CircuitUseRandomWalks;
 
   /** If true, we convert "www.google.com.foo.exit" addresses on the
    * socks/trans/natd ports into "www.google.com" addresses that
