@@ -981,9 +981,10 @@ directory_info_has_arrived(time_t now, int from_cache)
     tor_log(quiet ? LOG_INFO : LOG_NOTICE, LD_DIR,
         "I learned some more directory information, but not enough to "
         "build a circuit: %s", get_dir_info_status_string());
-    if (!options->CircuitUseRandomWalks) {
-       update_all_descriptor_downloads(now);
-    }
+    /* When random walks are active, rather than activating all downloads
+       here, we should check whether the blockage is due to lack of 
+       entry guards or a stale consensus, and fix that separately. */
+    update_all_descriptor_downloads(now);
     return;
   } else {
     if (directory_fetches_from_authorities(options)) {

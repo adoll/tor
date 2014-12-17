@@ -8,6 +8,7 @@
 #include "address.h"
 #include "config.h"
 #include "control.h"
+#include "directory.h"
 #include "dirserv.h"
 #include "geoip.h"
 #include "main.h"
@@ -1521,6 +1522,14 @@ update_router_have_minimum_dir_info(void)
     goto done;
   }
 
+  /* All we need is active directory guards for randomwalks, since
+   *  microdescriptors are fetched from directory guard on circuit creation. */
+  if (options->CircuitUseRandomWalks 
+      && choose_random_dirguard(MICRODESC_DIRINFO)) { 
+     res = 1;
+     goto done;
+  }
+    
   using_md = consensus->flavor == FLAV_MICRODESC;
 
   {
