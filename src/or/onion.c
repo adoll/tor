@@ -1031,7 +1031,7 @@ create_cell_format_impl(cell_t *cell_out, const create_cell_t *cell_in,
     return -1;
   }
   /** Set the next_hop to be the given number */
-  set_uint16(cell_out->payload+CELL_PAYLOAD_SIZE - 2, htons(5));//htons(cell_in->next_cell));
+  set_uint16(cell_out->payload+CELL_PAYLOAD_SIZE - 2, htons(cell_in->next_cell));
   log_info(LD_GENERAL,"Number at setting: %d\n", cell_in->next_hop);
   return 0;
 }
