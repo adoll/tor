@@ -17,6 +17,8 @@
  *   called when channels are created in circuitbuild.c
  */
 #include "or.h"
+/** We probably don't want to include this whole file long term. */
+#include "onion.h"
 #include "channel.h"
 #include "circuitbuild.h"
 #include "circuitlist.h"
@@ -220,8 +222,8 @@ command_process_create_cell(cell_t *cell, channel_t *chan)
 
   tor_assert(cell);
   tor_assert(chan);
-
-  log_debug(LD_OR,
+  log_info(LD_GENERAL,"Number: %d\n", ntohs(get_uint16(cell->payload+CELL_PAYLOAD_SIZE-2)));
+  log_info(LD_OR,
             "Got a CREATE cell for circ_id %u on channel " U64_FORMAT
             " (%p)",
             (unsigned)cell->circ_id,
@@ -427,6 +429,7 @@ command_process_created_cell(cell_t *cell, channel_t *chan)
     }
 
     relay_send_command_from_edge(0, circ, command,
+
                                  (const char*)payload, len, NULL);
   }
 }

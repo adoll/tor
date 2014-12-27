@@ -65,7 +65,7 @@ typedef struct create_cell_t {
   uint8_t onionskin[CELL_PAYLOAD_SIZE - 6];
   /** If random walks are enabled, contains the index of the requested 
       microdescriptor */ 
-  uint16_t next_cell;
+  uint16_t next_hop;
 } create_cell_t;
 
 /** A parsed CREATED, CREATED_FAST, or CREATED2 cell. */
