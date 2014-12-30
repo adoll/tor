@@ -222,7 +222,6 @@ command_process_create_cell(cell_t *cell, channel_t *chan)
 
   tor_assert(cell);
   tor_assert(chan);
-  log_info(LD_GENERAL,"Number: %d\n", ntohs(get_uint16(cell->payload+CELL_PAYLOAD_SIZE-2)));
   log_info(LD_OR,
             "Got a CREATE cell for circ_id %u on channel " U64_FORMAT
             " (%p)",
@@ -307,6 +306,7 @@ command_process_create_cell(cell_t *cell, channel_t *chan)
     circuit_mark_for_close(TO_CIRCUIT(circ), END_CIRC_REASON_TORPROTOCOL);
     return;
   }
+  log_info(LD_GENERAL,"After parsing: number: %d\n", create_cell->next_hop);
 
   if (create_cell->handshake_type != ONION_HANDSHAKE_TYPE_FAST) {
     /* hand it off to the cpuworkers, and then return. */
@@ -325,7 +325,6 @@ command_process_create_cell(cell_t *cell, channel_t *chan)
     uint8_t rend_circ_nonce[DIGEST_LEN];
     int len;
     created_cell_t created_cell;
-
     /* Make sure we never try to use the OR connection on which we
      * received this cell to satisfy an EXTEND request,  */
     channel_mark_client(chan);

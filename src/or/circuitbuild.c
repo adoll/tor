@@ -898,6 +898,8 @@ circuit_send_next_onion_skin(origin_circuit_t *circ)
     cc.handshake_len = len;
     /* Temporarily 8, must figure this out at some point */
     cc.next_hop = crypto_rand_int(8);
+    log_info(LD_CIRC,"Sending create cell. %d", cc.next_hop);
+    
     if (circuit_deliver_create_cell(TO_CIRCUIT(circ), &cc, 0) < 0)
       return - END_CIRC_REASON_RESOURCELIMIT;
 
@@ -1014,7 +1016,8 @@ circuit_send_next_onion_skin(origin_circuit_t *circ)
     ec.create_cell.handshake_len = len;
     /* Temporarily 8, must figure this out at some point */
     ec.create_cell.next_hop = crypto_rand_int(8);
-    log_info(LD_CIRC,"Sending extend relay cell.");
+
+    log_info(LD_CIRC,"Sending extend relay cell. %d", ec.create_cell.next_hop);
     note_request("cell: extend", 1);
     {
       uint8_t command = 0;
@@ -1024,7 +1027,7 @@ circuit_send_next_onion_skin(origin_circuit_t *circ)
         log_warn(LD_CIRC,"Couldn't format extend cell");
         return -END_CIRC_REASON_INTERNAL;
       }
-
+     
       /* send it to hop->prev, because it will transfer
        * it to a create cell and then send to hop */
       if (relay_send_command_from_edge(0, TO_CIRCUIT(circ),
