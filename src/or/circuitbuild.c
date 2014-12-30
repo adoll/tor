@@ -896,7 +896,8 @@ circuit_send_next_onion_skin(origin_circuit_t *circ)
       return - END_CIRC_REASON_INTERNAL;
     }
     cc.handshake_len = len;
-    cc.next_hop = 7;
+    /* Temporarily 8, must figure this out at some point */
+    cc.next_hop = crypto_rand_int(8);
     if (circuit_deliver_create_cell(TO_CIRCUIT(circ), &cc, 0) < 0)
       return - END_CIRC_REASON_RESOURCELIMIT;
 
@@ -1011,7 +1012,8 @@ circuit_send_next_onion_skin(origin_circuit_t *circ)
       return - END_CIRC_REASON_INTERNAL;
     }
     ec.create_cell.handshake_len = len;
-    ec.create_cell.next_hop = 5;
+    /* Temporarily 8, must figure this out at some point */
+    ec.create_cell.next_hop = crypto_rand_int(8);
     log_info(LD_CIRC,"Sending extend relay cell.");
     note_request("cell: extend", 1);
     {
