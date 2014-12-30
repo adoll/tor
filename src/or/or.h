@@ -2565,6 +2565,19 @@ typedef struct extend_info_t {
 #endif
 } extend_info_t;
 
+typedef struct random_walk_extend_t {
+   char nickname[MAX_HEX_NICKNAME_LEN+1];
+   char identity_digest[DIGEST_LEN];
+   uint16_t ipv4_port;
+   tor_addr_t ipv4_addr;
+   uint16_t ipv6_port;
+   uint16_t ipv6_addr;
+   crypto_pk_t *onion_key; /**< Current onionskin key. */
+#ifdef CURVE25519_ENABLED
+   curve25519_public_key_t curve25519_onion_key;
+#endif
+} random_walk_extend_t;
+
 /** Certificate for v3 directory protocol: binds long-term authority identity
  * keys to medium-term authority signing keys. */
 typedef struct authority_cert_t {

@@ -10,6 +10,7 @@
 #include "control.h"
 #include "directory.h"
 #include "dirserv.h"
+#include "entrynodes.h"
 #include "geoip.h"
 #include "main.h"
 #include "microdesc.h"
