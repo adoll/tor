@@ -73,8 +73,7 @@ typedef struct random_walk_extend_t {
    char identity_digest[DIGEST_LEN];
    uint16_t ipv4_port;
    tor_addr_t ipv4_addr;
-   uint16_t ipv6_port;
-   tor_addr_t ipv6_addr;
+   /** TODO: Add support for ipv6. */
    crypto_pk_t *onion_key; /**< Current onionskin key. */
 #ifdef CURVE25519_ENABLED
    curve25519_public_key_t curve25519_onion_key;

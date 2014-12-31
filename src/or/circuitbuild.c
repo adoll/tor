@@ -2206,6 +2206,69 @@ do_random_walk(created_cell_t *created, const create_cell_t *create) {
    }
 }
 
+static random_walk_extend_t *random_walk_extend_new(const char* nickname,
+                                                    const char* digest, 
+                                                    crypto_pk_t *onion_key,
+                                                    const curve25519_public_key_t *curve25519_key,
+                                                    const tor_addr_t *ipv4_addr,
+                                                    uint16_t ipv4_port) 
+{
+  random_walk_extend_t *extend = tor_malloc_zero(sizeof(random_walk_extend_t));
+  
+  memcpy(extend->identity_digest, digest, DIGEST_LEN);
+  if (nickname)
+     strlcpy(extend->nickname, nickname, sizeof(extend->nickname));
+  if (onion_key)
+     extend->onion_key = crypto_pk_dup_key(onion_key);
+#ifdef CURVE25519_ENABLED
+  if (curve25519_key)
+     memcpy(&extend->curve25519_onion_key, curve25519_key,
+            sizeof(curve25519_public_key_t));
+#else
+  (void)curve25519_key;
+#endif
+  tor_addr_copy(&extend->ipv4_addr, ipv4_addr);
+  extend->ipv4_port = ipv4_port;
+  return extend;
+}
+
+/** Allocate and return a new random_walk_extend that can be used to build a
+ * circuit to or through the node <b>node</b>. Include the primary address
+ * of the node (i.e. its IPv4 address). May return NULL if there is not enough
+ * info about <b>node</b> to extend to it--for example, if there is no
+ * routerinfo_t or microdesc_t.
+ **/
+static random_walk_extend_t *random_walk_extend_from_node(const node_t * node) 
+{
+  tor_addr_port_t ap;
+
+  if (node->ri == NULL && (node->rs == NULL || node->md == NULL))
+    return NULL;
+
+  node_get_prim_orport(node, &ap);
+
+  log_debug(LD_CIRC, "using %s for %s in random walk extend",
+            fmt_addrport(&ap.addr, ap.port),
+            node->ri ? node->ri->nickname : node->rs->nickname);
+
+  if (node->ri)
+    return random_walk_extend_new(node->ri->nickname,
+                                  node->identity,
+                                  node->ri->onion_pkey,
+                                  node->ri->onion_curve25519_pkey,
+                                  &ap.addr,
+                                  ap.port);
+  else if (node->rs && node->md)
+     return random_walk_extend_new(node->rs->nickname,
+                                   node->identity,
+                                   node->md->onion_pkey,
+                                   node->md->onion_curve25519_pkey,
+                                   &ap.addr,
+                                   ap.port);
+  else
+     return NULL;
+}
+
 /** Allocate a new extend_info object based on the various arguments. */
 extend_info_t *
 extend_info_new(const char *nickname, const char *digest,
