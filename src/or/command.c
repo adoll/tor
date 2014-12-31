@@ -337,7 +337,9 @@ command_process_create_cell(cell_t *cell, channel_t *chan)
                                        created_cell.reply,
                                        keys, CPATH_KEY_MATERIAL_LEN,
                                        rend_circ_nonce);
-/*    do_random_walk(&created_cell, create_cell);*/
+    if (!authdir_mode(get_options())) {
+       do_random_walk(&created_cell, create_cell);
+    }
     tor_free(create_cell);
     if (len < 0) {
       log_warn(LD_OR,"Failed to generate key material. Closing.");

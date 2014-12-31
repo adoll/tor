@@ -2442,22 +2442,30 @@ router_choose_random_node(smartlist_t *excludedsmartlist,
 }
 
 /** Helper for sorting: compare two nodes by their identity
- * digest.
- * TODO: Make more robust */
+ * digest. */
 static int
 compare_nodes_by_id_digest_(const void **a, const void **b)
 {
   node_t *first = *(node_t **)a, *second = *(node_t **)b;
-  if (first->ri && second->ri) {
-     return fast_memcmp(first->ri->cache_info.identity_digest,
-                second->ri->cache_info.identity_digest,
-                DIGEST_LEN);
+  char * first_digest = NULL, *second_digest = NULL;
+
+  if (first->ri) {
+     first_digest = first->ri->cache_info.identity_digest;
   }
-  else {
-     return fast_memcmp(first->rs->identity_digest,
-                second->rs->identity_digest,
-                DIGEST_LEN);
+  else if (first->rs) {
+     first_digest = first->rs->identity_digest;
   }
+
+  if (second->ri) {
+     second_digest = second->ri->cache_info.identity_digest;
+  }
+  else if (second->rs) {
+     second_digest = second->rs->identity_digest;
+  }
+  if (!first_digest && !second_digest) return 0;
+  else if (!first_digest) return -1;
+  else if (!second_digest) return 1;
+  else return fast_memcmp(first_digest, second_digest, DIGEST_LEN);
 }
 
 /** Choose a node from the node list, currently based off of the

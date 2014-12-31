@@ -473,7 +473,9 @@ cpuworker_main(void *data)
         }
         rpl.success = 1;
       }
-      /*do_random_walk(cell_out, cc);*/
+      if (!authdir_mode(get_options())) {
+         do_random_walk(cell_out, cc);
+      }
       rpl.magic = CPUWORKER_REPLY_MAGIC;
       if (req.timed) {
         struct timeval tv_diff;
