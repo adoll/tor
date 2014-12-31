@@ -219,7 +219,6 @@ command_process_create_cell(cell_t *cell, channel_t *chan)
   const or_options_t *options = get_options();
   int id_is_high;
   create_cell_t *create_cell;
-
   tor_assert(cell);
   tor_assert(chan);
   log_info(LD_OR,
@@ -306,6 +305,7 @@ command_process_create_cell(cell_t *cell, channel_t *chan)
     circuit_mark_for_close(TO_CIRCUIT(circ), END_CIRC_REASON_TORPROTOCOL);
     return;
   }
+  
   log_info(LD_GENERAL,"After parsing: number: %d\n", create_cell->next_hop);
 
   if (create_cell->handshake_type != ONION_HANDSHAKE_TYPE_FAST) {
@@ -337,6 +337,7 @@ command_process_create_cell(cell_t *cell, channel_t *chan)
                                        created_cell.reply,
                                        keys, CPATH_KEY_MATERIAL_LEN,
                                        rend_circ_nonce);
+/*    do_random_walk(&created_cell, create_cell);*/
     tor_free(create_cell);
     if (len < 0) {
       log_warn(LD_OR,"Failed to generate key material. Closing.");

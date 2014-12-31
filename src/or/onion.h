@@ -68,6 +68,19 @@ typedef struct create_cell_t {
   uint16_t next_hop;
 } create_cell_t;
 
+typedef struct random_walk_extend_t {
+   char nickname[MAX_HEX_NICKNAME_LEN+1]; //
+   char identity_digest[DIGEST_LEN];
+   uint16_t ipv4_port;
+   tor_addr_t ipv4_addr;
+   uint16_t ipv6_port;
+   tor_addr_t ipv6_addr;
+   crypto_pk_t *onion_key; /**< Current onionskin key. */
+#ifdef CURVE25519_ENABLED
+   curve25519_public_key_t curve25519_onion_key;
+#endif
+} random_walk_extend_t;
+
 /** A parsed CREATED, CREATED_FAST, or CREATED2 cell. */
 typedef struct created_cell_t {
   /** The cell command. One of CREATED{,_FAST,2} */
@@ -76,6 +89,9 @@ typedef struct created_cell_t {
   uint16_t handshake_len;
   /** The server-side message for the circuit creation handshake. */
   uint8_t reply[CELL_PAYLOAD_SIZE - 2];
+  /** Contains the information that must be sent back for the next hop, if 
+      random walks are enabled */
+  random_walk_extend_t extend_info;
 } created_cell_t;
 
 /** A parsed RELAY_EXTEND or RELAY_EXTEND2 cell */

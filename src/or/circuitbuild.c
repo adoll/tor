@@ -2190,6 +2190,22 @@ onion_append_hop(crypt_path_t **head_ptr, extend_info_t *choice)
   return 0;
 }
 
+/** Given a create cell and created cell, populate the portion
+  *  of the create cell for performing a random walk.
+  */
+void
+do_random_walk(created_cell_t *created, const create_cell_t *create) {
+   const node_t *next;
+
+   next = router_choose_node_by_index(create->next_hop);
+   if (next->ri) {
+      log_info(LD_OR, "Got a next router: %s", next->ri->nickname);
+   }
+   else {
+      log_info(LD_OR, "Got a next router: %s", next->rs->nickname);
+   }
+}
+
 /** Allocate a new extend_info object based on the various arguments. */
 extend_info_t *
 extend_info_new(const char *nickname, const char *digest,
