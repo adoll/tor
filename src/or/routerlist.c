@@ -2441,6 +2441,41 @@ router_choose_random_node(smartlist_t *excludedsmartlist,
   return choice;
 }
 
+/** Helper for sorting: compare two nodes by their identity
+ * digest.
+ * TODO: Make more robust */
+static int
+compare_nodes_by_id_digest_(const void **a, const void **b)
+{
+  node_t *first = *(node_t **)a, *second = *(node_t **)b;
+  if (first->ri && second->ri) {
+     return fast_memcmp(first->ri->cache_info.identity_digest,
+                second->ri->cache_info.identity_digest,
+                DIGEST_LEN);
+  }
+  else {
+     return fast_memcmp(first->rs->identity_digest,
+                second->rs->identity_digest,
+                DIGEST_LEN);
+  }
+}
+
+/** Choose a node from the node list, currently based off of the
+ *  position by alphabetical order by digest.
+ */
+const node_t *
+router_choose_node_by_index(uint16_t index) {
+  smartlist_t *sl = smartlist_new();
+      /*  *excludednodes=smartlist_new();*/
+ /*
+  if ((r = routerlist_find_my_routerinfo()))
+    routerlist_add_node_and_family(excludednodes, r);
+ */
+  router_add_running_nodes_to_smartlist(sl, 0, 1, 1, 0, 0);
+  smartlist_sort(sl, compare_nodes_by_id_digest_);
+  return (node_t *) smartlist_get(sl, index);
+}
+
 /** Helper: given an extended nickname in <b>hexdigest</b> try to decode it.
  * Return 0 on success, -1 on failure.  Store the result into the
  * DIGEST_LEN-byte buffer at <b>digest_out</b>, the single character at
