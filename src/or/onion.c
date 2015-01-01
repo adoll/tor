@@ -51,6 +51,7 @@ static int ol_entries[MAX_ONION_HANDSHAKE_TYPE+1];
 
 static int num_ntors_per_tap(void);
 static void onion_queue_entry_remove(onion_queue_t *victim);
+static int random_walk_extend_parse(const uint8_t *buf, random_walk_extend_t *extend);
 
 /* XXXX024 Check lengths vs MAX_ONIONSKIN_{CHALLENGE,REPLY}_LEN.
  *
@@ -795,6 +796,7 @@ created_cell_parse(created_cell_t *cell_out, const cell_t *cell_in)
     cell_out->cell_type = CELL_CREATED_FAST;
     cell_out->handshake_len = CREATED_FAST_LEN;
     memcpy(cell_out->reply, cell_in->payload, CREATED_FAST_LEN);
+    random_walk_extend_parse(cell_in->payload + CREATED_FAST_LEN, &cell_out->extend_info);
     break;
   case CELL_CREATED2:
     {
@@ -804,6 +806,7 @@ created_cell_parse(created_cell_t *cell_out, const cell_t *cell_in)
       if (cell_out->handshake_len > CELL_PAYLOAD_SIZE - 2)
         return -1;
       memcpy(cell_out->reply, p+2, cell_out->handshake_len);
+      random_walk_extend_parse(p + 2 + cell_out->handshake_len, &cell_out->extend_info);
       break;
     }
   }
@@ -1074,9 +1077,9 @@ create_cell_format_relayed(cell_t *cell_out, const create_cell_t *cell_in)
 /** Helper, writes the random walk extend to the dest buffer, returns the number
     of bytes written. */
 static int
-random_walk_extend_format(uint8_t *dest, random_walk_extend_t *extend)
+random_walk_extend_format(uint8_t *dest, const random_walk_extend_t *extend)
 {
-   int r;
+   int r = 0;
    
    /** Set nickname */
    strlcpy((char *)dest, extend->nickname, MAX_NICKNAME_LEN + 1);
@@ -1113,7 +1116,7 @@ random_walk_extend_format(uint8_t *dest, random_walk_extend_t *extend)
     in extend. Returns 0 on success, -1 on failure.
  */
 static int
-random_walk_extend_parse(uint8_t *buf, random_walk_extend_t *extend)
+random_walk_extend_parse(const uint8_t *buf, random_walk_extend_t *extend)
 {   
    /** Get nickname */
    memcpy(extend->nickname, buf, MAX_NICKNAME_LEN + 1);
@@ -1159,11 +1162,15 @@ created_cell_format(cell_t *cell_out, const created_cell_t *cell_in)
   case CELL_CREATED_FAST:
     tor_assert(cell_in->handshake_len <= sizeof(cell_out->payload));
     memcpy(cell_out->payload, cell_in->reply, cell_in->handshake_len);
+    random_walk_extend_format(cell_out->payload + cell_in->handshake_len, 
+                              &cell_in->extend_info);
     break;
   case CELL_CREATED2:
     tor_assert(cell_in->handshake_len <= sizeof(cell_out->payload)-2);
     set_uint16(cell_out->payload, htons(cell_in->handshake_len));
     memcpy(cell_out->payload + 2, cell_in->reply, cell_in->handshake_len);
+    random_walk_extend_format(cell_out->payload + cell_in->handshake_len + 2, 
+                              &cell_in->extend_info);
     break;
   default:
     return -1;
