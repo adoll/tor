@@ -1099,7 +1099,7 @@ random_walk_extend_format(uint8_t *dest, const random_walk_extend_t *extend)
    /* Set curve25519 key, For now, assume everything can use curve25519 keys 
       (if they don't, they wouldn't support random walks anyway). */
    if (!curve25519_public_key_is_ok(&extend->curve25519_onion_key)) {
-      log_info(LD_OR, "Uh oh... we have a defective curve key");
+      log_info(LD_OR, "Uh oh... we have a defective curve key: %s", extend->nickname);
    }
    curve25519_public_to_base64((char *)dest, &extend->curve25519_onion_key);
    r += CURVE25519_BASE64_PADDED_LEN + 1;

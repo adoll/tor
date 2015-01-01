@@ -1631,7 +1631,7 @@ connection_edge_process_relay_cell(cell_t *cell, circuit_t *circ,
                "'extended' unsupported at non-origin. Dropping.");
         return 0;
       }
-      log_debug(domain,"Got an extended cell! Yay.");
+      log_info(LD_OR,"Got an extended cell! Yay.");
       {
         extended_cell_t extended_cell;
         if (extended_cell_parse(&extended_cell, rh.command,
@@ -1641,6 +1641,7 @@ connection_edge_process_relay_cell(cell_t *cell, circuit_t *circ,
                    "Can't parse EXTENDED cell; killing circuit.");
           return -END_CIRC_REASON_TORPROTOCOL;
         }
+        log_info(LD_OR, "Got a server: %s", extended_cell.created_cell.extend_info.nickname);
         if ((reason = circuit_finish_handshake(TO_ORIGIN_CIRCUIT(circ),
                                          &extended_cell.created_cell)) < 0) {
           log_warn(domain,"circuit_finish_handshake failed.");

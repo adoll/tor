@@ -399,7 +399,7 @@ command_process_created_cell(cell_t *cell, channel_t *chan)
   if (CIRCUIT_IS_ORIGIN(circ)) { /* we're the OP. Handshake this. */
     origin_circuit_t *origin_circ = TO_ORIGIN_CIRCUIT(circ);
     int err_reason = 0;
-    log_debug(LD_OR,"at OP. Finishing handshake.");
+    log_info(LD_OR,"at OP. Finishing handshake.");
     log_info(LD_OR, "Got a server: %s", extended_cell.created_cell.extend_info.nickname);
     if ((err_reason = circuit_finish_handshake(origin_circ,
                                         &extended_cell.created_cell)) < 0) {
