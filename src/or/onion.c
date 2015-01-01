@@ -995,6 +995,9 @@ extended_cell_parse(extended_cell_t *cell_out,
     cell_out->created_cell.cell_type = CELL_CREATED;
     cell_out->created_cell.handshake_len = TAP_ONIONSKIN_REPLY_LEN;
     memcpy(cell_out->created_cell.reply, payload, TAP_ONIONSKIN_REPLY_LEN);
+    random_walk_extend_parse(payload + TAP_ONIONSKIN_REPLY_LEN, 
+                             &cell_out->created_cell.extend_info);
+
     break;
   case RELAY_COMMAND_EXTENDED2:
     {
@@ -1006,6 +1009,8 @@ extended_cell_parse(extended_cell_t *cell_out,
         return -1;
       memcpy(cell_out->created_cell.reply, payload+2,
              cell_out->created_cell.handshake_len);
+      random_walk_extend_parse(payload+2 + cell_out->created_cell.handshake_len,
+                               &cell_out->created_cell.extend_info);
     }
     break;
   default:
@@ -1273,6 +1278,9 @@ extended_cell_format(uint8_t *command_out, uint16_t *len_out,
       *len_out = TAP_ONIONSKIN_REPLY_LEN;
       memcpy(payload_out, cell_in->created_cell.reply,
              TAP_ONIONSKIN_REPLY_LEN);
+      *len_out += random_walk_extend_format(
+         payload_out + TAP_ONIONSKIN_REPLY_LEN, 
+         &cell_in->created_cell.extend_info);
     }
     break;
   case RELAY_COMMAND_EXTENDED2:
@@ -1284,6 +1292,9 @@ extended_cell_format(uint8_t *command_out, uint16_t *len_out,
         return -1;
       memcpy(payload_out+2, cell_in->created_cell.reply,
              cell_in->created_cell.handshake_len);
+      *len_out += random_walk_extend_format(
+         payload_out + cell_in->created_cell.handshake_len + 2, 
+         &cell_in->created_cell.extend_info);
     }
     break;
   default:
