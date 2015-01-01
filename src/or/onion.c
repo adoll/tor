@@ -14,6 +14,7 @@
 #include "circuitlist.h"
 #include "config.h"
 #include "cpuworker.h"
+#include "crypto.h"
 #include "networkstatus.h"
 #include "onion.h"
 #include "onion_fast.h"
@@ -1068,6 +1069,44 @@ int
 create_cell_format_relayed(cell_t *cell_out, const create_cell_t *cell_in)
 {
   return create_cell_format_impl(cell_out, cell_in, 1);
+}
+
+/** Helper, writes the random walk extend to the dest buffer, returns the number
+    of bytes written. */
+static int
+write_random_walk_extend_to_buf(uint8_t *dest, random_walk_extend_t *extend, 
+                                int len) {
+   int r;
+   
+   /** Set nickname */
+   strlcpy((char *)dest, extend->nickname, MAX_NICKNAME_LEN + 1);
+   r += MAX_NICKNAME_LEN + 1;
+   dest += MAX_NICKNAME_LEN + 1;
+
+   /* Set digest */
+   memcpy(dest, extend->identity_digest, DIGEST_LEN);
+   r += DIGEST_LEN;
+   dest += DIGEST_LEN;
+
+   /* Set curve25519 key, For now, assume everything can use curve25519 keys 
+      (if they don't, they wouldn't support random walks anyway). */
+   if (!curve25519_public_key_is_ok(&extend->curve25519_onion_key)) {
+      log_info(LD_OR, "Uh oh... we have a defective curve key");
+   }
+   curve25519_public_to_base64((char *)dest, &extend->curve25519_onion_key);
+   r += CURVE25519_BASE64_PADDED_LEN;
+   dest += CURVE25519_BASE64_PADDED_LEN;
+
+   /* Set port. */
+   set_uint16(dest, htons(extend->ipv4_port));
+   r += 2;
+   dest += 2;
+   
+   /* Encode tor_addr_t. */
+   set_uint32(dest, tor_addr_to_ipv4n(&extend->ipv4_addr));
+   r += 4;
+   
+   return r;
 }
 
 /** Fill <b>cell_out</b> with a correctly formatted version of the
