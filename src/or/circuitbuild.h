@@ -47,7 +47,7 @@ int circuit_append_new_exit(origin_circuit_t *circ, extend_info_t *info);
 int circuit_extend_to_new_exit(origin_circuit_t *circ, extend_info_t *info);
 void onion_append_to_cpath(crypt_path_t **head_ptr, crypt_path_t *new_hop);
 
-void do_random_walk(struct created_cell_t *created, const struct create_cell_t *create);
+int do_random_walk(struct created_cell_t *created, const struct create_cell_t *create);
 
 extend_info_t *extend_info_new(const char *nickname, const char *digest,
                                crypto_pk_t *onion_key,
