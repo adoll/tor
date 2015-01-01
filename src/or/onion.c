@@ -1097,8 +1097,8 @@ random_walk_extend_format(uint8_t *dest, const random_walk_extend_t *extend)
       log_info(LD_OR, "Uh oh... we have a defective curve key");
    }
    curve25519_public_to_base64((char *)dest, &extend->curve25519_onion_key);
-   r += CURVE25519_BASE64_PADDED_LEN;
-   dest += CURVE25519_BASE64_PADDED_LEN;
+   r += CURVE25519_BASE64_PADDED_LEN + 1;
+   dest += CURVE25519_BASE64_PADDED_LEN + 1;
 
    /* Set port. */
    set_uint16(dest, htons(extend->ipv4_port));
@@ -1126,15 +1126,15 @@ random_walk_extend_parse(const uint8_t *buf, random_walk_extend_t *extend)
    memcpy(extend->identity_digest, buf, DIGEST_LEN);
    buf += DIGEST_LEN;
 
-   curve25519_public_from_base64(&extend->curve25519_onion_key, (char *)buf);
-   buf += CURVE25519_BASE64_PADDED_LEN;
 
    /* Check curve25519 key, For now, assume everything can use curve25519 keys 
       (if they don't, they wouldn't support random walks anyway). */
-   if (!curve25519_public_key_is_ok(&extend->curve25519_onion_key)) {
+   if (curve25519_public_from_base64(&extend->curve25519_onion_key, (char *)buf)) {
+      log_info(LD_OR, "We have a defective key, do we have a nickname: %s", extend->nickname);
       log_info(LD_OR, "Uh oh... we have a defective curve key after parsing.");
       return -1;
    }
+   buf += CURVE25519_BASE64_PADDED_LEN + 1;
 
    /* Get port. */
    extend->ipv4_port = ntohs(get_uint16(buf));

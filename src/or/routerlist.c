@@ -2474,13 +2474,11 @@ compare_nodes_by_id_digest_(const void **a, const void **b)
 const node_t *
 router_choose_node_by_index(uint16_t index) {
   smartlist_t *sl = smartlist_new();
-      /*  *excludednodes=smartlist_new();*/
- /*
-  if ((r = routerlist_find_my_routerinfo()))
-    routerlist_add_node_and_family(excludednodes, r);
- */
+  
   router_add_running_nodes_to_smartlist(sl, 0, 1, 1, 0, 0);
+  if (smartlist_len(sl) == 0) return NULL;
   smartlist_sort(sl, compare_nodes_by_id_digest_);
+  if (index >= smartlist_len(sl)) return NULL;
   return (node_t *) smartlist_get(sl, index);
 }
 
