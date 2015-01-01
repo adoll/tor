@@ -1074,8 +1074,8 @@ create_cell_format_relayed(cell_t *cell_out, const create_cell_t *cell_in)
 /** Helper, writes the random walk extend to the dest buffer, returns the number
     of bytes written. */
 static int
-write_random_walk_extend_to_buf(uint8_t *dest, random_walk_extend_t *extend, 
-                                int len) {
+random_walk_extend_format(uint8_t *dest, random_walk_extend_t *extend)
+{
    int r;
    
    /** Set nickname */
@@ -1107,6 +1107,39 @@ write_random_walk_extend_to_buf(uint8_t *dest, random_walk_extend_t *extend,
    r += 4;
    
    return r;
+}
+
+/** Helper, parses random walk extend from buffer, placing information
+    in extend. Returns 0 on success, -1 on failure.
+ */
+static int
+random_walk_extend_parse(uint8_t *buf, random_walk_extend_t *extend)
+{   
+   /** Get nickname */
+   memcpy(extend->nickname, buf, MAX_NICKNAME_LEN + 1);
+   buf += MAX_NICKNAME_LEN + 1;
+
+   /* Get digest */
+   memcpy(extend->identity_digest, buf, DIGEST_LEN);
+   buf += DIGEST_LEN;
+
+   curve25519_public_from_base64(&extend->curve25519_onion_key, (char *)buf);
+   buf += CURVE25519_BASE64_PADDED_LEN;
+
+   /* Check curve25519 key, For now, assume everything can use curve25519 keys 
+      (if they don't, they wouldn't support random walks anyway). */
+   if (!curve25519_public_key_is_ok(&extend->curve25519_onion_key)) {
+      log_info(LD_OR, "Uh oh... we have a defective curve key after parsing.");
+      return -1;
+   }
+
+   /* Get port. */
+   extend->ipv4_port = ntohs(get_uint16(buf));
+   buf += 2;
+   
+   /* Get tor_addr_t. */
+   tor_addr_from_ipv4n(&extend->ipv4_addr, get_uint32(buf));
+   return 0;
 }
 
 /** Fill <b>cell_out</b> with a correctly formatted version of the
