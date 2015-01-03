@@ -400,7 +400,7 @@ command_process_created_cell(cell_t *cell, channel_t *chan)
     origin_circuit_t *origin_circ = TO_ORIGIN_CIRCUIT(circ);
     int err_reason = 0;
     log_info(LD_OR,"at OP. Finishing handshake.");
-    if (get_options()->CircuitUseRandomWalks) {
+    if (get_options()->CircuitUseRandomWalks && !origin_circ->build_state->onehop_tunnel) {
        random_walk_process_created_cell(origin_circ, &extended_cell.created_cell);
     }
     if ((err_reason = circuit_finish_handshake(origin_circ,
