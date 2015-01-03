@@ -61,6 +61,9 @@ static int count_acceptable_nodes(smartlist_t *routers);
 static int onion_append_hop(crypt_path_t **head_ptr, extend_info_t *choice);
 static int circuit_establish_random_walk_circuit(origin_circuit_t * circ,
                                                  extend_info_t *exit);
+static extend_info_t * extend_info_from_random_walk_info(
+   const random_walk_extend_t * extend);
+
 #ifdef CURVE25519_ENABLED
 static int circuits_can_use_ntor(void);
 #endif
@@ -522,10 +525,23 @@ circuit_establish_random_walk_circuit(origin_circuit_t * circ,
      circuit_mark_for_close(TO_CIRCUIT(circ), -err_reason);
      return -1;
   }
-  /* Next, every place we get a created cell, use the random_walk_extend
-     info to add to the crypt path, checking whether the node we've gotten
-     is on the current path. */
   return 0;
+}
+
+int
+random_walk_process_created_cell(origin_circuit_t *circ, 
+                                 created_cell_t *cc)
+{
+   extend_info_t *info;
+   /* Need to check that the node we got back isn't already in the circuit. */
+   /* We should try to prevent this from happening at some point. */
+   /* If it is, resend create (or just close for now?). */
+   
+   /* Get an extend info. */
+   info = extend_info_from_random_walk_info(&cc->extend_info);
+   onion_append_hop(&circ->cpath, info);
+   extend_info_free(info);
+   return 0;
 }
 
 /** Start establishing the first hop of our circuit. Figure out what
@@ -2340,6 +2356,21 @@ extend_info_new(const char *nickname, const char *digest,
   tor_addr_copy(&info->addr, addr);
   info->port = port;
   return info;
+}
+
+/** Returns a new extend info from a random_walk_info struct, 
+ * right now, this doesn't do much, but as we add more to the struct
+ * it will have to do more, such as decide between ipv4 and ipv6.
+*/
+static extend_info_t *
+extend_info_from_random_walk_info(const random_walk_extend_t * extend)
+{  
+   return extend_info_new(extend->nickname,
+                          extend->identity_digest,
+                          NULL,
+                          &extend->curve25519_onion_key,
+                          &extend->ipv4_addr,
+                          extend->ipv4_port);
 }
 
 /** Allocate and return a new extend_info that can be used to build a

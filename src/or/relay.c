@@ -1641,6 +1641,11 @@ connection_edge_process_relay_cell(cell_t *cell, circuit_t *circ,
                    "Can't parse EXTENDED cell; killing circuit.");
           return -END_CIRC_REASON_TORPROTOCOL;
         }
+        if (get_options()->CircuitUseRandomWalks) {
+           random_walk_process_created_cell(TO_ORIGIN_CIRCUIT(circ),
+                                            &extended_cell.created_cell);
+        }
+
         log_info(LD_OR, "Got a server: %s", extended_cell.created_cell.extend_info.nickname);
         if ((reason = circuit_finish_handshake(TO_ORIGIN_CIRCUIT(circ),
                                          &extended_cell.created_cell)) < 0) {
