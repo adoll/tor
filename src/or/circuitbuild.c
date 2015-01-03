@@ -533,12 +533,25 @@ random_walk_process_created_cell(origin_circuit_t *circ,
                                  created_cell_t *cc)
 {
    extend_info_t *info;
-   /* Need to check that the node we got back isn't already in the circuit. */
-   /* We should try to prevent this from happening at some point. */
-   /* If it is, resend create (or just close for now?). */
-   
+   crypt_path_t *hop = circ->cpath;
    /* Get an extend info. */
    info = extend_info_from_random_walk_info(&cc->extend_info);
+   
+   /* Need to check that the node we got back isn't already in the circuit.
+      We should try to prevent this from happening at some point. */
+   do {
+      if (memcmp(hop->extend_info->identity_digest,
+                 info->identity_digest,
+                 DIGEST_LEN)) {
+         /*If it is, just close for now, should attempt recovery at some point*/
+         log_info(LD_OR,
+                  "Circuit got duplicate entry from random walk, closing");
+         circuit_mark_for_close(TO_CIRCUIT(circ), END_CIRC_REASON_NOPATH);
+         return -1;
+      }
+      hop = hop->next;
+   } while (hop != circ->cpath);
+
    onion_append_hop(&circ->cpath, info);
    extend_info_free(info);
    return 0;
