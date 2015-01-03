@@ -59,6 +59,8 @@ static crypt_path_t *onion_next_hop_in_cpath(crypt_path_t *cpath);
 static int onion_extend_cpath(origin_circuit_t *circ);
 static int count_acceptable_nodes(smartlist_t *routers);
 static int onion_append_hop(crypt_path_t **head_ptr, extend_info_t *choice);
+static int circuit_establish_random_walk_circuit(origin_circuit_t * circ,
+                                                 extend_info_t *exit);
 #ifdef CURVE25519_ENABLED
 static int circuits_can_use_ntor(void);
 #endif
@@ -474,6 +476,17 @@ circuit_establish_circuit(uint8_t purpose, extend_info_t *exit, int flags)
   int err_reason = 0;
 
   circ = origin_circuit_init(purpose, flags);
+  /* For now, defer to normal way of circuit construction if we construct a one
+     hop tunnel- this should only be used for contacting dir servers, 
+     so when we stop using them, we won't have this problem unless we need an 
+     entry guard. */
+  if (get_options()->CircuitUseRandomWalks && (flags & CIRCLAUNCH_ONEHOP_TUNNEL)) {
+     if (circuit_establish_random_walk_circuit(circ, exit) < 0) {
+        log_info(LD_CIRC,"Establishing random walk circuit failed.");
+        circuit_mark_for_close(TO_CIRCUIT(circ), END_CIRC_REASON_NOPATH);
+        return NULL;
+     }
+  }
 
   if (onion_pick_cpath_exit(circ, exit) < 0 ||
       onion_populate_cpath(circ) < 0) {
@@ -488,6 +501,31 @@ circuit_establish_circuit(uint8_t purpose, extend_info_t *exit, int flags)
     return NULL;
   }
   return circ;
+}
+
+/** Build a circuit using random walks. For now, we will not support
+ * specifiying exits.*/
+static int 
+circuit_establish_random_walk_circuit(origin_circuit_t * circ,
+                                      extend_info_t *exit) 
+{
+  int err_reason;
+  /* Need to initialize desired circuit length. For now, just set it to 3. */
+  circ->build_state->desired_path_len = 3;
+  /* Choose the first node, add it to the circ, and handle first hop. */
+  if (onion_extend_cpath(circ) < 0) {
+     log_info(LD_CIRC,"Generating cpath hop failed.");
+     return -1;
+  }
+
+  if ((err_reason = circuit_handle_first_hop(circ)) < 0) {
+     circuit_mark_for_close(TO_CIRCUIT(circ), -err_reason);
+     return -1;
+  }
+  /* Next, every place we get a created cell, use the random_walk_extend
+     info to add to the crypt path, checking whether the node we've gotten
+     is on the current path. */
+  return 0;
 }
 
 /** Start establishing the first hop of our circuit. Figure out what
