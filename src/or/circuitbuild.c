@@ -483,7 +483,7 @@ circuit_establish_circuit(uint8_t purpose, extend_info_t *exit, int flags)
      hop tunnel- this should only be used for contacting dir servers, 
      so when we stop using them, we won't have this problem unless we need an 
      entry guard. */
-  if (get_options()->CircuitUseRandomWalks && (flags & CIRCLAUNCH_ONEHOP_TUNNEL)) {
+  if (get_options()->CircuitUseRandomWalks && !(flags & CIRCLAUNCH_ONEHOP_TUNNEL)) {
      if (circuit_establish_random_walk_circuit(circ, exit) < 0) {
         log_info(LD_CIRC,"Establishing random walk circuit failed.");
         circuit_mark_for_close(TO_CIRCUIT(circ), END_CIRC_REASON_NOPATH);
