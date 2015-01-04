@@ -536,9 +536,13 @@ random_walk_process_created_cell(origin_circuit_t *circ,
 {
    extend_info_t *info;
    crypt_path_t *hop = circ->cpath;
+   int cur_len = circuit_get_cpath_len(circ);
    /* Get an extend info. */
    info = extend_info_from_random_walk_info(&cc->extend_info);
    log_info(LD_OR, "Processing random walk");
+   if (cur_len >= circ->build_state->desired_path_len) {
+      return 0;
+   }
    /* Need to check that the node we got back isn't already in the circuit.
       We should try to prevent this from happening at some point. */
    do {
