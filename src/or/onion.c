@@ -674,7 +674,8 @@ create_cell_init(create_cell_t *cell_out, uint8_t cell_type,
  */
 void create2_cell_init(create_cell_t *cell_out, uint8_t cell_type,
                        uint16_t handshake_type, uint16_t handshake_len,
-                       uint16_t next_hop, const uint8_t *onionskin) {
+                       uint16_t next_hop, uint8_t need_exit, 
+                       const uint8_t *onionskin) {
 
    memset(cell_out, 0, sizeof(*cell_out));
    
@@ -682,6 +683,7 @@ void create2_cell_init(create_cell_t *cell_out, uint8_t cell_type,
    cell_out->handshake_type = handshake_type;
    cell_out->handshake_len = handshake_len;
    cell_out->next_hop = next_hop;
+   cell_out->need_exit = need_exit;
    memcpy(cell_out->onionskin, onionskin, handshake_len);
 }
 
@@ -696,13 +698,14 @@ static int
 parse_create2_payload(create_cell_t *cell_out, const uint8_t *p, size_t p_len)
 {
   uint16_t handshake_type, handshake_len, next_hop;
-  
+  uint8_t need_exit;
   if (p_len < 4)
      return -1;
 
   handshake_type = ntohs(get_uint16(p));
   handshake_len = ntohs(get_uint16(p+2));
   next_hop = ntohs(get_uint16(p + 4 + handshake_len));
+  need_exit = get_uint8(p + 6 + handshake_len);
 
   if (handshake_len > CELL_PAYLOAD_SIZE - 4 || handshake_len > p_len - 4)
     return -1;
@@ -710,7 +713,7 @@ parse_create2_payload(create_cell_t *cell_out, const uint8_t *p, size_t p_len)
     return -1;
 
   create2_cell_init(cell_out, CELL_CREATE2, handshake_type, handshake_len,
-                   next_hop, p+4);
+                    next_hop, need_exit, p+4);
   return 0;
 }
 
@@ -742,6 +745,7 @@ create_cell_parse(create_cell_t *cell_out, const cell_t *cell_in)
     create2_cell_init(cell_out, CELL_CREATE_FAST, ONION_HANDSHAKE_TYPE_FAST,
                       CREATE_FAST_LEN, 
                       ntohs(get_uint16(cell_in->payload + CREATE_FAST_LEN)),
+                      get_uint8(cell_in->payload + CREATE_FAST_LEN + 2),
                       cell_in->payload);
     break;
   case CELL_CREATE2:
@@ -1050,6 +1054,7 @@ create_cell_format_impl(cell_t *cell_out, const create_cell_t *cell_in,
     tor_assert(cell_in->handshake_len <= space);
     memcpy(p, cell_in->onionskin, cell_in->handshake_len);
     set_uint16(p + cell_in->handshake_len, htons(cell_in->next_hop));
+    set_uint8(p + cell_in->handshake_len + 2, cell_in->need_exit);
     break;
   case CELL_CREATE2:
     tor_assert(cell_in->handshake_len <= sizeof(cell_out->payload)-4);
@@ -1057,6 +1062,7 @@ create_cell_format_impl(cell_t *cell_out, const create_cell_t *cell_in,
     set_uint16(cell_out->payload+2, htons(cell_in->handshake_len));
     /** Set the next_hop to be the given number */
     set_uint16(cell_out->payload + 4 + cell_in->handshake_len, htons(cell_in->next_hop));
+    set_uint8(cell_out->payload + 6 + cell_in->handshake_len, cell_in->need_exit);
     memcpy(cell_out->payload + 4, cell_in->onionskin, cell_in->handshake_len);
     break;
   default:
