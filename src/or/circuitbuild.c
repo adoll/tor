@@ -489,6 +489,7 @@ circuit_establish_circuit(uint8_t purpose, extend_info_t *exit, int flags)
         circuit_mark_for_close(TO_CIRCUIT(circ), END_CIRC_REASON_NOPATH);
         return NULL;
      }
+     return circ;
   }
 
   if (onion_pick_cpath_exit(circ, exit) < 0 ||
@@ -513,6 +514,7 @@ circuit_establish_random_walk_circuit(origin_circuit_t * circ,
                                       extend_info_t *exit) 
 {
   int err_reason;
+  log_info(LD_OR, "Establishing random walk");
   /* Need to initialize desired circuit length. For now, just set it to 3. */
   circ->build_state->desired_path_len = 3;
   /* Choose the first node, add it to the circ, and handle first hop. */
@@ -536,7 +538,7 @@ random_walk_process_created_cell(origin_circuit_t *circ,
    crypt_path_t *hop = circ->cpath;
    /* Get an extend info. */
    info = extend_info_from_random_walk_info(&cc->extend_info);
-   
+   log_info(LD_OR, "Processing random walk");
    /* Need to check that the node we got back isn't already in the circuit.
       We should try to prevent this from happening at some point. */
    do {
@@ -545,7 +547,8 @@ random_walk_process_created_cell(origin_circuit_t *circ,
                  DIGEST_LEN)) {
          /*If it is, just close for now, should attempt recovery at some point*/
          log_info(LD_OR,
-                  "Circuit got duplicate entry from random walk, closing");
+                  "Circuit got duplicate entry from random walk, closing: %s, %s",
+                  info->nickname, hop->extend_info->nickname);
          circuit_mark_for_close(TO_CIRCUIT(circ), END_CIRC_REASON_NOPATH);
          return -1;
       }
