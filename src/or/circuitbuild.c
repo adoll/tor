@@ -1088,6 +1088,10 @@ circuit_send_next_onion_skin(origin_circuit_t *circ)
       return - END_CIRC_REASON_INTERNAL;
     }
     ec.create_cell.handshake_len = len;
+    /* If we need an exit */
+    if (circ->build_state->desired_path_len - circuit_get_cpath_len(circ) == 1) {
+       ec.create_cell.need_exit = 1;
+    }
     /* Temporarily 8, must figure this out at some point */
     ec.create_cell.next_hop = crypto_rand_int(8);
 
