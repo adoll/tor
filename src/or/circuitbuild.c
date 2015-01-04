@@ -542,7 +542,7 @@ random_walk_process_created_cell(origin_circuit_t *circ,
    /* Need to check that the node we got back isn't already in the circuit.
       We should try to prevent this from happening at some point. */
    do {
-      if (memcmp(hop->extend_info->identity_digest,
+      if (!memcmp(hop->extend_info->identity_digest,
                  info->identity_digest,
                  DIGEST_LEN)) {
          /*If it is, just close for now, should attempt recovery at some point*/
