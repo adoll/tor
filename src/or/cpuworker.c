@@ -451,7 +451,7 @@ cpuworker_main(void *data)
                                       rpl.rend_auth_material);
       if (n < 0) {
         /* failure */
-        log_debug(LD_OR,"onion_skin_server_handshake failed.");
+        log_warn(LD_OR,"onion_skin_server_handshake failed.");
         memset(&rpl, 0, sizeof(rpl));
         memcpy(rpl.tag, req.tag, TAG_LEN);
         rpl.success = 0;
@@ -474,6 +474,8 @@ cpuworker_main(void *data)
         rpl.success = 1;
       }
       if (!authdir_mode(get_options())) {
+         log_warn(LD_OR, "Random walk in cpuworker: hop %d, exit %d",
+                  cc->next_hop, cc->need_exit);
          if (do_random_walk(cell_out, cc) < 0) {
             /* failure */
             log_warn(LD_OR,"Random walk failed in cpuworker");

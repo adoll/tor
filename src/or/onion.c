@@ -1141,8 +1141,7 @@ random_walk_extend_parse(const uint8_t *buf, random_walk_extend_t *extend)
    /* Check curve25519 key, For now, assume everything can use curve25519 keys 
       (if they don't, they wouldn't support random walks anyway). */
    if (curve25519_public_from_base64(&extend->curve25519_onion_key, (char *)buf)) {
-      log_info(LD_OR, "We have a defective key, do we have a nickname: %s", extend->nickname);
-      log_info(LD_OR, "Uh oh... we have a defective curve key after parsing.");
+      log_warn(LD_OR, "We have a defective key, do we have a nickname: %s", extend->nickname);
       return -1;
    }
    buf += CURVE25519_BASE64_PADDED_LEN + 1;
