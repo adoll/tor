@@ -974,7 +974,7 @@ circuit_send_next_onion_skin(origin_circuit_t *circ)
        we could have dirservers send this, or the entry guards. */
     cc.next_hop = crypto_rand_int(get_options()->NumRelays);
 
-    log_info(LD_CIRC,"Sending create cell. %d", cc.next_hop);    
+    log_warn(LD_CIRC,"Sending create cell. %d", cc.next_hop);    
     if (circuit_deliver_create_cell(TO_CIRCUIT(circ), &cc, 0) < 0)
       return - END_CIRC_REASON_RESOURCELIMIT;
 
@@ -1026,7 +1026,7 @@ circuit_send_next_onion_skin(origin_circuit_t *circ)
           }
         }
       }
-      log_info(LD_CIRC,"circuit built!");
+      log_warn(LD_CIRC,"circuit built!");
       circuit_reset_failure_count(0);
 
       if (circ->build_state->onehop_tunnel || circ->has_opened) {
@@ -1099,7 +1099,7 @@ circuit_send_next_onion_skin(origin_circuit_t *circ)
        we could have dirservers send this, or the entry guards. */
     ec.create_cell.next_hop = crypto_rand_int(get_options()->NumRelays);
 
-    log_info(LD_CIRC,"Sending extend relay cell. %d", ec.create_cell.next_hop);
+    log_warn(LD_CIRC,"Sending extend relay cell. %d", ec.create_cell.next_hop);
     note_request("cell: extend", 1);
     {
       uint8_t command = 0;
@@ -2343,18 +2343,19 @@ do_random_walk(created_cell_t *created, const create_cell_t *create) {
    const node_t *next;
    random_walk_extend_t *random_walk;
    
-   log_info(LD_OR, "Need exit: %d", create->need_exit);
+   log_warn(LD_OR, "Need exit: %d", create->need_exit);
    next = router_choose_node_by_index(create->next_hop, create->need_exit);
    if (!next) return -1;
    if (next->ri) {
-      log_info(LD_OR, "Got a next router: %s", next->ri->nickname);
+      log_warn(LD_OR, "Got a next router: %s", next->ri->nickname);
    }
    else {
-      log_info(LD_OR, "Got a next router: %s", next->rs->nickname);
+      log_warn(LD_OR, "Got a next router: %s", next->rs->nickname);
    }
    
    random_walk = random_walk_extend_from_node(next);
    if (!random_walk) {
+      log_warn(LD_OR, "Finding a node failed");
       return -1;
    }
    memcpy(&created->extend_info, random_walk, sizeof(random_walk_extend_t));

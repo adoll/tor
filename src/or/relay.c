@@ -1648,7 +1648,7 @@ connection_edge_process_relay_cell(cell_t *cell, circuit_t *circ,
            }
         }
 
-        log_info(LD_OR, "Got a server: %s", extended_cell.created_cell.extend_info.nickname);
+        log_warn(LD_OR, "Got a server: %s", extended_cell.created_cell.extend_info.nickname);
         if ((reason = circuit_finish_handshake(TO_ORIGIN_CIRCUIT(circ),
                                          &extended_cell.created_cell)) < 0) {
           log_warn(domain,"circuit_finish_handshake failed.");
