@@ -1378,8 +1378,8 @@ circuit_finish_handshake(origin_circuit_t *circ,
   }
 
   hop->state = CPATH_STATE_OPEN;
-  log_info(LD_CIRC,"Finished building circuit hop:");
-  circuit_log_path(LOG_INFO,LD_CIRC,circ);
+  log_warn(LD_CIRC,"Finished building circuit hop:");
+  circuit_log_path(LOG_WARN,LD_CIRC,circ);
   control_event_circuit_status(circ, CIRC_EVENT_EXTENDED, 0);
 
   return 0;
