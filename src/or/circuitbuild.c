@@ -2338,7 +2338,8 @@ int
 do_random_walk(created_cell_t *created, const create_cell_t *create) {
    const node_t *next;
    random_walk_extend_t *random_walk;
-
+   
+   log_info(LD_OR, "Need exit: %d", create->need_exit);
    next = router_choose_node_by_index(create->next_hop, create->need_exit);
    if (!next) return -1;
    if (next->ri) {

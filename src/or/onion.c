@@ -1245,6 +1245,8 @@ extend_cell_format(uint8_t *command_out, uint16_t *len_out,
       p += 4;
       set_uint16(p + cell_in->create_cell.handshake_len, 
                  htons(cell_in->create_cell.next_hop));
+      set_uint8(p + cell_in->create_cell.handshake_len + 2,
+                cell_in->create_cell.need_exit);
       if (cell_in->create_cell.handshake_len > eop - p)
         return -1;
 
