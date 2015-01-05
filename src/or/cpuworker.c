@@ -476,7 +476,7 @@ cpuworker_main(void *data)
       if (!authdir_mode(get_options())) {
          if (do_random_walk(cell_out, cc) < 0) {
             /* failure */
-            log_debug(LD_OR,"Random walk failed in cpuworker");
+            log_warn(LD_OR,"Random walk failed in cpuworker");
             memset(&rpl, 0, sizeof(rpl));
             memcpy(rpl.tag, req.tag, TAG_LEN);
             rpl.success = 0;  
