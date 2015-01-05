@@ -1069,7 +1069,7 @@ create_cell_format_impl(cell_t *cell_out, const create_cell_t *cell_in,
     return -1;
   }
   
-  log_info(LD_GENERAL,"Number at setting: %d\n", cell_in->next_hop);
+  log_info(LD_GENERAL,"Number at setting: %d", cell_in->next_hop);
   return 0;
 }
 
@@ -1253,7 +1253,7 @@ extend_cell_format(uint8_t *command_out, uint16_t *len_out,
       memcpy(p, cell_in->create_cell.onionskin,
              cell_in->create_cell.handshake_len);
       
-      p += cell_in->create_cell.handshake_len + 2;
+      p += cell_in->create_cell.handshake_len + 2 + 1;
       *len_out = p - payload_out;
     }
     break;

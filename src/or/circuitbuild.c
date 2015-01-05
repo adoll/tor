@@ -1090,6 +1090,7 @@ circuit_send_next_onion_skin(origin_circuit_t *circ)
     ec.create_cell.handshake_len = len;
     /* If we need an exit */
     if (circ->build_state->desired_path_len - circuit_get_cpath_len(circ) == 1) {
+       log_info(LD_OR, "Need an exit");
        ec.create_cell.need_exit = 1;
     }
     /* Temporarily 8, must figure this out at some point */
