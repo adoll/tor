@@ -1094,7 +1094,7 @@ circuit_send_next_onion_skin(origin_circuit_t *circ)
     ec.create_cell.handshake_len = len;
     /* If we need an exit */
     if (circ->build_state->desired_path_len - circuit_get_cpath_len(circ) == 1) {
-       log_info(LD_OR, "Need an exit");
+       log_warn(LD_OR, "Need an exit");
        ec.create_cell.need_exit = 1;
        ec.create_cell.next_hop = crypto_rand_int(get_options()->NumExits);
     }
