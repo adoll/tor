@@ -950,7 +950,7 @@ extend_cell_parse(extend_cell_t *cell_out, const uint8_t command,
       }
       if (!found_id || !found_ipv4)
         return -1;
-      log_info(LD_OR, "Parsed Extend");
+      log_warn(LD_OR, "Parsed Extend");
       if (parse_create2_payload(&cell_out->create_cell,payload,eop-payload)<0)
         return -1;
       break;

@@ -561,8 +561,10 @@ random_walk_process_created_cell(origin_circuit_t *circ,
 
    log_warn(LD_CIRC, "Appending a hop: %s", extend_info_describe(info));
    if (circ->build_state->desired_path_len - cur_len == 1) {
-      circuit_append_new_exit(circ, info);
-   } else onion_append_hop(&circ->cpath, info);
+      extend_info_free(state->chosen_exit);
+      state->chosen_exit = extend_info_dup(info);
+   }
+   onion_append_hop(&circ->cpath, info);
    extend_info_free(info);
    return 0;
 }
