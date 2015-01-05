@@ -2500,6 +2500,7 @@ const node_t *
 router_choose_node_by_index(uint16_t index, uint8_t needs_exit) {
   smartlist_t *sl = smartlist_new();
   if (needs_exit) {
+     log_info(LD_OR, "Getting an exit");
      router_add_running_exits_to_smartlist(sl, 0, 1, 0, 0, 0);
   } else router_add_running_nodes_to_smartlist(sl, 0, 1, 0, 0, 0);
   if (smartlist_len(sl) == 0) return NULL;
