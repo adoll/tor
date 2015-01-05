@@ -970,10 +970,11 @@ circuit_send_next_onion_skin(origin_circuit_t *circ)
       return - END_CIRC_REASON_INTERNAL;
     }
     cc.handshake_len = len;
-    /* Temporarily 8, must figure this out at some point */
-    cc.next_hop = crypto_rand_int(8);
-    log_info(LD_CIRC,"Sending create cell. %d", cc.next_hop);
-    
+    /* For now, number of relays is a configuration choice, for deployment,
+       we could have dirservers send this, or the entry guards. */
+    cc.next_hop = crypto_rand_int(get_options()->NumRelays);
+
+    log_info(LD_CIRC,"Sending create cell. %d", cc.next_hop);    
     if (circuit_deliver_create_cell(TO_CIRCUIT(circ), &cc, 0) < 0)
       return - END_CIRC_REASON_RESOURCELIMIT;
 
@@ -1092,9 +1093,11 @@ circuit_send_next_onion_skin(origin_circuit_t *circ)
     if (circ->build_state->desired_path_len - circuit_get_cpath_len(circ) == 1) {
        log_info(LD_OR, "Need an exit");
        ec.create_cell.need_exit = 1;
+       ec.create_cell.next_hop = crypto_rand_int(get_options()->NumExits);
     }
-    /* Temporarily 8, must figure this out at some point */
-    ec.create_cell.next_hop = crypto_rand_int(8);
+    /* For now, number of relays is a configuration choice, for deployment,
+       we could have dirservers send this, or the entry guards. */
+    ec.create_cell.next_hop = crypto_rand_int(get_options()->NumRelays);
 
     log_info(LD_CIRC,"Sending extend relay cell. %d", ec.create_cell.next_hop);
     note_request("cell: extend", 1);

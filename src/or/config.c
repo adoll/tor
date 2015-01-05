@@ -328,6 +328,8 @@ static config_var_t option_vars_[] = {
   V(NumCPUs,                     UINT,     "0"),
   V(NumDirectoryGuards,          UINT,     "0"),
   V(NumEntryGuards,              UINT,     "0"),
+  V(NumExits,                    UINT,     "0"),
+  V(NumRelays,                   UINT,     "0"),
   V(ORListenAddress,             LINELIST, NULL),
   VPORT(ORPort,                      LINELIST, NULL),
   V(OutboundBindAddress,         LINELIST,   NULL),

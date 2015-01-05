@@ -338,7 +338,11 @@ command_process_create_cell(cell_t *cell, channel_t *chan)
                                        keys, CPATH_KEY_MATERIAL_LEN,
                                        rend_circ_nonce);
     if (!authdir_mode(get_options())) {
-       do_random_walk(&created_cell, create_cell);
+       if (do_random_walk(&created_cell, create_cell) < 0) {
+          log_info(LD_OR, "Had no routers for random walk");
+          circuit_mark_for_close(TO_CIRCUIT(circ), END_CIRC_REASON_RESOURCELIMIT);
+          return;
+       }
     }
     tor_free(create_cell);
     if (len < 0) {
