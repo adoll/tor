@@ -519,10 +519,10 @@ circuit_establish_random_walk_circuit(origin_circuit_t * circ,
   circ->build_state->desired_path_len = 3;
   /* Choose the first node, add it to the circ, and handle first hop. */
   if (onion_extend_cpath(circ) < 0) {
-     log_info(LD_CIRC,"Generating cpath hop failed.");
+     log_warn(LD_CIRC,"Generating cpath hop failed.");
      return -1;
   }
-
+  log_warn(LD_CIRC,"In circuit establish random walk");
   if ((err_reason = circuit_handle_first_hop(circ)) < 0) {
      circuit_mark_for_close(TO_CIRCUIT(circ), -err_reason);
      return -1;
@@ -539,7 +539,7 @@ random_walk_process_created_cell(origin_circuit_t *circ,
    int cur_len = circuit_get_cpath_len(circ);
    /* Get an extend info. */
    info = extend_info_from_random_walk_info(&cc->extend_info);
-   log_info(LD_OR, "Processing random walk");
+   log_warn(LD_OR, "Processing random walk create cell");
    if (cur_len >= circ->build_state->desired_path_len) {
       return 0;
    }
@@ -550,7 +550,7 @@ random_walk_process_created_cell(origin_circuit_t *circ,
                  info->identity_digest,
                  DIGEST_LEN)) {
          /*If it is, just close for now, should attempt recovery at some point*/
-         log_info(LD_OR,
+         log_warn(LD_OR,
                   "Circuit got duplicate entry from random walk, closing: %s, %s",
                   info->nickname, hop->extend_info->nickname);
          circuit_mark_for_close(TO_CIRCUIT(circ), END_CIRC_REASON_NOPATH);
@@ -558,7 +558,7 @@ random_walk_process_created_cell(origin_circuit_t *circ,
       }
       hop = hop->next;
    } while (hop != circ->cpath);
-
+   log_warn(LD_CIRC, "Appending a hop: %s", info->nickname);
    onion_append_hop(&circ->cpath, info);
    extend_info_free(info);
    return 0;
