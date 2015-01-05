@@ -1095,15 +1095,16 @@ circuit_send_next_onion_skin(origin_circuit_t *circ)
       return - END_CIRC_REASON_INTERNAL;
     }
     ec.create_cell.handshake_len = len;
-    /* If we need an exit */
+    /* If we need an exit...
+       For now, number of relays is a configuration choice, for deployment,
+       we could have dirservers send this, or the entry guards. */
     if (circ->build_state->desired_path_len - circuit_get_cpath_len(circ) == 1) {
        log_warn(LD_OR, "Need an exit");
        ec.create_cell.need_exit = 1;
        ec.create_cell.next_hop = crypto_rand_int(get_options()->NumExits);
+    } else {
+       ec.create_cell.next_hop = crypto_rand_int(get_options()->NumRelays);
     }
-    /* For now, number of relays is a configuration choice, for deployment,
-       we could have dirservers send this, or the entry guards. */
-    ec.create_cell.next_hop = crypto_rand_int(get_options()->NumRelays);
 
     log_warn(LD_CIRC,"Sending extend relay cell. %d", ec.create_cell.next_hop);
     note_request("cell: extend", 1);
