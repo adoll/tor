@@ -552,14 +552,17 @@ random_walk_process_created_cell(origin_circuit_t *circ,
          /*If it is, just close for now, should attempt recovery at some point*/
          log_warn(LD_OR,
                   "Circuit got duplicate entry from random walk, closing: %s, %s",
-                  info->nickname, hop->extend_info->nickname);
+                  extend_info_describe(info), extend_info_describe(hop->extend_info));
          circuit_mark_for_close(TO_CIRCUIT(circ), END_CIRC_REASON_NOPATH);
          return -1;
       }
       hop = hop->next;
    } while (hop != circ->cpath);
-   log_warn(LD_CIRC, "Appending a hop: %s", info->nickname);
-   onion_append_hop(&circ->cpath, info);
+
+   log_warn(LD_CIRC, "Appending a hop: %s", extend_info_describe(info));
+   if (circ->build_state->desired_path_len - cur_len == 1) {
+      circuit_append_new_exit(circ, info);
+   } else onion_append_hop(&circ->cpath, info);
    extend_info_free(info);
    return 0;
 }
