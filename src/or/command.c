@@ -306,7 +306,8 @@ command_process_create_cell(cell_t *cell, channel_t *chan)
     return;
   }
   
-  log_info(LD_GENERAL,"After parsing: number: %d\n", create_cell->next_hop);
+  log_warn(LD_GENERAL,"Create cell after parsing: number: %d, exit:%d", create_cell->next_hop,
+     create_cell->needs_exit);
 
   if (create_cell->handshake_type != ONION_HANDSHAKE_TYPE_FAST) {
     /* hand it off to the cpuworkers, and then return. */
