@@ -1750,6 +1750,31 @@ router_add_running_nodes_to_smartlist(smartlist_t *sl, int allow_invalid,
   } SMARTLIST_FOREACH_END(node);
 }
 
+/** Add every suitable node from our nodelist to <b>sl</b>, so that
+ * we can pick a node for a circuit.
+ */
+static void
+router_add_running_exits_to_smartlist(smartlist_t *sl, int allow_invalid,
+                                      int need_uptime, int need_capacity,
+                                      int need_guard, int need_desc)
+{ /* XXXX MOVE */
+  SMARTLIST_FOREACH_BEGIN(nodelist_get_list(), const node_t *, node) {
+    if (!node->is_running ||
+        (!node->is_valid && !allow_invalid))
+      continue;
+    if (need_desc && !(node->ri || (node->rs && node->md)))
+      continue;
+    if (node->ri && node->ri->purpose != ROUTER_PURPOSE_GENERAL)
+      continue;
+    if (node_is_unreliable(node, need_uptime, need_capacity, need_guard))
+      continue;
+    if (!node->is_exit)
+      continue;
+
+    smartlist_add(sl, (void *)node);
+  } SMARTLIST_FOREACH_END(node);
+}
+
 /** Look through the routerlist until we find a router that has my key.
  Return it. */
 const routerinfo_t *
@@ -2472,10 +2497,11 @@ compare_nodes_by_id_digest_(const void **a, const void **b)
  *  position by alphabetical order by digest.
  */
 const node_t *
-router_choose_node_by_index(uint16_t index) {
+router_choose_node_by_index(uint16_t index, uint8_t needs_exit) {
   smartlist_t *sl = smartlist_new();
-  
-  router_add_running_nodes_to_smartlist(sl, 0, 1, 1, 0, 0);
+  if (needs_exit) {
+     router_add_running_exits_to_smartlist(sl, 0, 1, 0, 0, 0);
+  } else router_add_running_nodes_to_smartlist(sl, 0, 1, 0, 0, 0);
   if (smartlist_len(sl) == 0) return NULL;
   smartlist_sort(sl, compare_nodes_by_id_digest_);
   if (index >= smartlist_len(sl)) return NULL;

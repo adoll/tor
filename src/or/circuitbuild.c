@@ -2339,7 +2339,7 @@ do_random_walk(created_cell_t *created, const create_cell_t *create) {
    const node_t *next;
    random_walk_extend_t *random_walk;
 
-   next = router_choose_node_by_index(create->next_hop);
+   next = router_choose_node_by_index(create->next_hop, create->need_exit);
    if (!next) return -1;
    if (next->ri) {
       log_info(LD_OR, "Got a next router: %s", next->ri->nickname);
